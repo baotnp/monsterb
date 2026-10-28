@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>monsterb: developer notes</title>
+  <meta name="description" content="Short, tested notes from a developer working on Odoo integrations: mail, deployment and debugging.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <a class="site" href="./">monsterb</a>
+    <nav><a href="./">Notes</a><a href="https://github.com/baotnp">GitHub</a></nav>
+  </header>
+
+  <main>
+    <h1>Developer notes</h1>
+    <p>
+      Working notes from building and debugging <a href="https://www.odoo.com">Odoo</a> integrations.
+      Each note is something I ran and observed, written down so the next person (usually me) does not
+      have to rediscover it. Code in the notes is meant to be copied.
+    </p>
+
+    <h2>Notes</h2>
+    <ul class="entries">
+      <li>
+        <a href="notes/odoo-local-mail.html">Testing Odoo outgoing e-mail without a real mail server</a>
+        <p>Why "Test Connection" times out on port 25, how to tell a blocked port from a wrong password,
+           and a 60-line SMTP sink that saves every message as an <code>.eml</code> file.</p>
+      </li>
+    </ul>
+
+    <h2>Source</h2>
+    <p>
+      The sink script from the note is in this repository:
+      <a href="https://github.com/baotnp/monsterb/blob/main/notes/smtp_sink.py"><code>notes/smtp_sink.py</code></a>.
+      Everything here is personal and non-commercial.
+    </p>
+  </main>
+
+  <footer>
+    <p>monsterb &middot; notes by <a href="https://github.com/baotnp">baotnp</a> &middot; source on GitHub</p>
+  </footer>
+</body>
+</html>

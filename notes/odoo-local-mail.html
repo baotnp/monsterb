@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Testing Odoo outgoing e-mail without a real mail server &middot; monsterb</title>
+  <meta name="description" content="Diagnose a timing-out SMTP Test Connection in Odoo 19 and capture outgoing mail locally with a small Python SMTP sink.">
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <header>
+    <a class="site" href="../">monsterb</a>
+    <nav><a href="../">Notes</a><a href="https://github.com/baotnp">GitHub</a></nav>
+  </header>
+
+  <main>
+    <h1>Testing Odoo outgoing e-mail without a real mail server</h1>
+    <p class="meta">Odoo 19 &middot; Python 3 &middot; checked on macOS</p>
+
+    <p>
+      Settings &gt; Technical &gt; Outgoing Mail Servers has a <em>Test Connection</em> button. When it answers
+      <em>"No response received. Check server address and port number."</em> after about 25 seconds, the
+      credentials were never tried: the TCP connection did not complete.
+    </p>
+
+    <h2>1. Is it the port or the account?</h2>
+    <p>
+      Probe the port from the machine that runs Odoo, and compare with a host you know works.
+      A timeout and an immediate refusal mean different things.
+    </p>
+    <pre><code>import socket
+for host, port in [("smtp.example.org", 25), ("smtp.gmail.com", 25), ("smtp.gmail.com", 587)]:
+    s = socket.socket(); s.settimeout(8)
+    try:
+        s.connect((host, port)); print(host, port, "open", s.recv(80)[:60])
+    except Exception as e:
+        print(host, port, type(e).__name__)
+    finally:
+        s.close()</code></pre>
+    <table>
+      <thead><tr><th>Result</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>TimeoutError</code> on 25, but 587 connects</td><td>Your network drops outbound port 25. Many ISPs do. Not an Odoo or credentials problem.</td></tr>
+        <tr><td><code>ConnectionRefusedError</code> (fast, ~0.2 s)</td><td>The host answered and nothing listens on that port. Use the port the provider documents.</td></tr>
+        <tr><td>Connects, banner shown, Odoo still fails</td><td>Now check encryption (none / STARTTLS / SSL) and the login.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>2. Capture mail locally instead</h2>
+    <p>
+      To check what a template looks like you do not need delivery at all. Run a sink that accepts any
+      message and writes it to disk:
+    </p>
+    <pre><code>python3 smtp_sink.py 1025 mail-sink</code></pre>
+    <p>
+      Source: <a href="https://github.com/baotnp/monsterb/blob/main/notes/smtp_sink.py"><code>smtp_sink.py</code></a>.
+      It uses only the standard library, handles the dot-stuffing of the SMTP <code>DATA</code> command, and
+      ignores a client that hangs up early (a port probe, for example).
+    </p>
+    <p>Then edit the outgoing mail server in Odoo:</p>
+    <table>
+      <tbody>
+        <tr><th>SMTP Server</th><td><code>127.0.0.1</code></td></tr>
+        <tr><th>SMTP Port</th><td><code>1025</code></td></tr>
+        <tr><th>Connection Security</th><td>None</td></tr>
+        <tr><th>Authentication</th><td>none needed (leave user and password empty)</td></tr>
+        <tr><th>From Filter</th><td>empty</td></tr>
+      </tbody>
+    </table>
+    <p>
+      Each message lands as <code>mail-sink/0001-recipient.eml</code>. Open it in a mail client, or read the
+      HTML part in a browser.
+    </p>
+
+    <h2>3. "Sent" in the UI is not "delivered"</h2>
+    <p>
+      An action that queues mail (<code>mail.mail</code> with a cron) returns success at once. The real result
+      is the <code>state</code> and <code>failure_reason</code> of the <code>mail.mail</code> record and the
+      Odoo log. A custom log row that says <em>sent</em> may only mean "queued". When a button seems to do
+      nothing, look there first:
+    </p>
+    <pre><code>select id, state, left(failure_reason, 120) from mail_mail order by id desc limit 5;</code></pre>
+    <p>
+      One failure I hit this way came from the provider, not from Odoo:
+      <code>SMTPDataError (500, ... Failed to send mail No balance)</code>. A temporary mailbox service had a
+      send quota, and a script using <code>smtplib</code> directly got the same error, which ruled Odoo out.
+    </p>
+
+    <h2>4. A real server for staging: Lark Mail</h2>
+    <p>
+      If a staging environment needs real delivery, Lark Mail can be used as an SMTP server for an address on
+      a domain you control. From Lark's documentation:
+    </p>
+    <ul>
+      <li>Outgoing server: <code>smtp.larksuite.com</code>, SSL, port <code>465</code>.</li>
+      <li>A separate password for third-party clients is generated in the Lark desktop app (Settings &gt; Email &gt; Third-party email client login). The mobile app and the web version cannot generate it.</li>
+      <li>An administrator must switch the third-party client permission on first (Admin Console &gt; Product Settings &gt; Mail &gt; Email Management Tools &gt; User Function Permissions).</li>
+      <li>The account needs a business e-mail address assigned on a verified domain, or Lark shows <em>No email address</em>.</li>
+    </ul>
+    <p>
+      Set the Odoo <em>From Filter</em> and the <code>mail.default.from</code> system parameter to that same
+      address, so the sender matches the login.
+    </p>
+  </main>
+
+  <footer>
+    <p>monsterb &middot; notes by <a href="https://github.com/baotnp">baotnp</a> &middot; <a href="https://github.com/baotnp/monsterb">source</a></p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,69 @@
+:root {
+  --bg: #fbfaf7;
+  --fg: #1f2421;
+  --muted: #5d655f;
+  --rule: #d9d6cc;
+  --accent: #1d5c4a;
+  --code-bg: #f0eee6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141815;
+    --fg: #e7e9e4;
+    --muted: #9aa39c;
+    --rule: #2c332e;
+    --accent: #6fcfae;
+    --code-bg: #1c221e;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 1.0625rem/1.65 ui-serif, Georgia, "Times New Roman", serif;
+}
+
+main, header, footer {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+header { padding-top: 2.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--rule); }
+header .site { font: 600 1.125rem/1 ui-monospace, "SF Mono", Menlo, monospace; color: var(--fg); text-decoration: none; }
+header nav { margin-top: .5rem; font: .9375rem/1.4 ui-sans-serif, system-ui, sans-serif; color: var(--muted); }
+header nav a { margin-right: 1rem; }
+
+main { padding-top: 2rem; padding-bottom: 3rem; }
+
+h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 .75rem; text-wrap: balance; }
+h2 { font-size: 1.25rem; line-height: 1.3; margin: 2.25rem 0 .5rem; }
+p, ul, ol { margin: 0 0 1rem; }
+li { margin-bottom: .35rem; }
+
+a { color: var(--accent); text-underline-offset: .18em; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.meta { font: .875rem/1.4 ui-sans-serif, system-ui, sans-serif; color: var(--muted); margin-bottom: 1.5rem; }
+
+code, pre { font: .9rem/1.5 ui-monospace, "SF Mono", Menlo, monospace; }
+code { background: var(--code-bg); padding: .1em .35em; border-radius: 3px; }
+pre { background: var(--code-bg); padding: .9rem 1rem; border-radius: 4px; overflow-x: auto; margin: 0 0 1.25rem; }
+pre code { background: none; padding: 0; }
+
+table { border-collapse: collapse; width: 100%; margin: 0 0 1.25rem; font: .9375rem/1.4 ui-sans-serif, system-ui, sans-serif; }
+th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--rule); }
+th { font-weight: 600; }
+
+.entries { list-style: none; padding: 0; }
+.entries li { padding: .9rem 0; border-bottom: 1px solid var(--rule); margin: 0; }
+.entries a { font-size: 1.1rem; font-weight: 600; }
+.entries p { margin: .25rem 0 0; color: var(--muted); }
+
+footer { border-top: 1px solid var(--rule); padding-top: 1rem; padding-bottom: 2rem; font: .875rem/1.5 ui-sans-serif, system-ui, sans-serif; color: var(--muted); }
